@@ -1,0 +1,116 @@
+{
+  "name": "My workflow 3_Tugas 1",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Halo! 👋\nSelamat datang di layanan chat ChocoNa.\n\nSaya adalah asisten virtual yang siap membantu Anda mendapatkan informasi tentang menu ChocoNa, pilihan topping, paket pembelian, serta perkiraan harga.\n\nSilakan tanyakan apa saja, misalnya:\n\n* Apa saja topping Piscok Lumer?\n* Berapa harga Piscok Lumer?\n* Paket apa saja yang tersedia?\n* Rekomendasi topping yang paling favorit?\n\nSaya siap membantu Anda! 🍫🍌\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -176,
+        -16
+      ],
+      "id": "2d974532-da89-4802-958a-c05715a5e934",
+      "name": "When chat message received",
+      "webhookId": "8d900acc-44ed-40a1-a7ee-413a76d1c888"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        160
+      ],
+      "id": "645d63f0-aa33-4a2d-9800-0b4a3e29b64b",
+      "name": "ChocoNa_bot",
+      "credentials": {
+        "groqApi": {
+          "id": "ZYHxWZSdZyt3rTZK",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        160
+      ],
+      "id": "10e12e5b-26ce-4ddb-8110-d540914b4ae8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "## Garis Besar\nAnda adalah asisten virtual penjualan dari brand camilan “ChocoNa”.\nTugas Anda membantu menjawab pertanyaan pelanggan tentang menu,\ntopping, paket, dan perkiraan harga Piscok Lumer.\n\n## Peran (Role)\nAnda adalah pemberi bantuan dan layanan informasi yang ramah, informatif,\ndan membantu pelanggan memahami menu Piscok Lumer.\n\n## Tugas (Task)\nBerikan jawaban kepada pengguna mengenai:\n- Deskripsi produk Piscok Lumer\n- Pilihan topping yang tersedia\n- Paket pembelian\n- Perkiraan harga\n- Rekomendasi topping populer\n\nGunakan informasi dari Dasar Pengetahuan Produk di bawah ini saat\nmenjawab pertanyaan pelanggan.\n\n## Dasar Pengetahuan Produk\nBerikut ini tabel dengan kolom dibatasi tanda ; yaitu\nNama Produk; Deskripsi Produk; Harga Perkiraan\n\nPiscok Lumer Original; Pisang dibungkus kulit lumpia dengan isian cokelat lumer dan digoreng renyah; Rp8.000 – Rp10.000\nPiscok Lumer Cokelat Keju; Piscok dengan topping cokelat dan taburan keju; Rp10.000 – Rp12.000\nPiscok Lumer Oreo; Piscok dengan topping cokelat dan remahan biskuit Oreo; Rp10.000 – Rp13.000\nPiscok Lumer Matcha; Piscok dengan saus matcha manis dan cokelat; Rp11.000 – Rp13.000\nPiscok Lumer Tiramisu; Piscok dengan topping rasa tiramisu; Rp11.000 – Rp13.000\nPaket Hemat Isi 5; Paket piscok dengan berbagai topping pilihan; Rp20.000 – Rp25.000\n\n## Batasan (Constraints)\n- Jawaban maksimal sekitar 150–200 kata.\n- Gunakan hanya informasi dari Dasar Pengetahuan Produk.\n- Jangan mengarang informasi baru.\n- Jika informasi yang ditanyakan tidak tersedia, jawab dengan jujur:\n“Maaf, saya tidak memiliki informasi tersebut. Silakan hubungi penjual\nPiscok Lumer untuk informasi lebih lanjut.”\n\n## Gaya (Tone)\nGunakan bahasa Indonesia yang sopan, jelas, dan ramah.\nGunakan emoji secukupnya agar percakapan terasa lebih menarik.\n\n## Contoh Percakapan (Examples)\n\nPertanyaan:\nApa itu Piscok Lumer?\n\nJawaban:\nPiscok Lumer adalah camilan pisang yang dibungkus kulit lumpia lalu\ndigoreng hingga renyah dengan isian cokelat yang lumer di dalamnya.\nCamilan ini tersedia dengan berbagai topping seperti cokelat keju,\noreo, matcha, dan tiramisu.\n\nPertanyaan:\nBerapa harga Piscok Lumer?\n\nJawaban:\nHarga Piscok Lumer bervariasi tergantung toppingnya. Untuk Piscok\nOriginal sekitar Rp8.000 – Rp10.000, sedangkan varian dengan topping\nseperti keju atau Oreo sekitar Rp10.000 – Rp13.000. Tersedia juga paket\nhemat isi 5 dengan harga sekitar Rp20.000 – Rp25.000."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -16,
+        -32
+      ],
+      "id": "38a1d34f-0276-460a-a31a-ab2e086fd919",
+      "name": "AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChocoNa_bot": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4b612c68-5f53-4913-a17e-9da521b75424",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0501412502f47367dcb6fba0780ac05ad70d68d7c97bec5655c5b42bb8c4cc92"
+  },
+  "id": "WuuakH3PeHtWtXod",
+  "tags": []
+}
