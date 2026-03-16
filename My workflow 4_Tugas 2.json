@@ -1,0 +1,158 @@
+{
+  "name": "My workflow 4_Tugas 2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        240
+      ],
+      "id": "dc7abb90-64aa-49d0-954e-7b877c79d20b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Kamu adalah asisten chatbot resmi untuk memberikan informasi tentang program pelatihan di NFA.\n\nTugas kamu adalah membantu pengguna menjawab pertanyaan mengenai:\n\n* jenis program pelatihan\n* nama pelatihan atau kursus\n* deskripsi materi pelatihan\n* harga atau biaya pelatihan\n\nSemua jawaban harus berdasarkan data yang tersedia di Google Sheets yang berisi kolom:\nJenis Program Pelatihan, Nama Pelatihan/Kursus di NFA, Deskripsi Pelatihan/Kursus di NFA, dan Harga/Biaya.\n\nGunakan tool Google Sheets \"Get row(s) in sheet in Google Sheets\" untuk mencari informasi yang relevan.\n\nAturan menjawab:\n\n1. Jawab hanya berdasarkan data yang ada di Google Sheets.\n2. Jika pengguna menanyakan harga pelatihan, berikan nama pelatihan dan harga yang sesuai.\n3. Jika pengguna menanyakan deskripsi pelatihan, jelaskan berdasarkan kolom deskripsi yang tersedia.\n4. Jika pengguna menanyakan daftar pelatihan, tampilkan beberapa pelatihan yang tersedia.\n5. Jika informasi tidak ditemukan di Google Sheets, jawab bahwa informasi tidak tersedia di database pelatihan NFA.\n6. Berikan jawaban yang singkat, jelas, dan mudah dipahami.\n7. Jangan membuat atau menambahkan informasi yang tidak ada di data Google Sheets."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        32
+      ],
+      "id": "10cfba8a-f331-4aff-be54-d7e1a1d1512f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        240
+      ],
+      "id": "c6a7d73b-648f-4f08-98c6-e73868498fb8",
+      "name": "Afifa-NFA4",
+      "credentials": {
+        "groqApi": {
+          "id": "31TYoSEJzFGZkf7i",
+          "name": "Afifa-NFA4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1gaKOJmWzgLEmGsnVH68YzaEQ0EtoXCnkViYSHujBoB8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gaKOJmWzgLEmGsnVH68YzaEQ0EtoXCnkViYSHujBoB8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        224
+      ],
+      "id": "78f7b073-cc59-47ab-adcf-d84a819821bb",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6dbKsV5qQP7rWApR",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Halo! 👋\nSelamat datang di Chatbot Informasi Pelatihan NFA.\n\nSaya dapat membantu Anda mengetahui informasi tentang program pelatihan, deskripsi materi, dan biaya pelatihan.\n\nBeberapa program yang tersedia antara lain:\n• Digital Marketing\n• Network Engineering\n• Web Development\n• Mobile Programming\n• Codeless Data Science\n• DevOps Engineer\n• Python Programming\n• Laravel Framework\n• Mikrotik Network\n• Office Application (MS Office)\n• Video Editing & Youtube Content Creator\n\nSilakan tanyakan apa yang ingin Anda ketahui, misalnya:\n• \"Berapa harga pelatihan Web Development?\"\n• \"Apa saja materi Digital Marketing?\"\n• \"Berapa biaya pelatihan Python Programming?\"\n\nSaya siap membantu Anda.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "a7ccbae6-171f-4942-ae2b-301fa4fc6ef0",
+      "name": "When chat message received",
+      "webhookId": "0b6b43e9-9350-462e-8ec4-436cde90ba97"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Afifa-NFA4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9a1df28d-0f4e-4d37-9de1-38472cbb106d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0501412502f47367dcb6fba0780ac05ad70d68d7c97bec5655c5b42bb8c4cc92"
+  },
+  "id": "pnpbvMw2srMOXCGw",
+  "tags": []
+}
