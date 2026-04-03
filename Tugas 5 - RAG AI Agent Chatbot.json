@@ -1,0 +1,460 @@
+{
+  "name": "Tugas 5 - RAG AI Agent Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Skipsi. How can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        176
+      ],
+      "id": "21270414-1e1a-4303-a2f3-56bb3be525cd",
+      "name": "When chat message received",
+      "webhookId": "AKAN-DIGENERATE-OTOMATIS",
+      "notes": "Trigger chat dari web. Aktifkan 'public' agar tautan web chat bisa diakses. Publish workflow agar URL aktif."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').item.json.sessionId ?? $('When chat message received').item.json.chatId ?? 'default-session' }}",
+        "options": {
+          "systemMessage": "Kamu adalah asisten AI yang membantu mahasiswa dalam penulisan ilmiah tugas akhir atau skripsi.\n\nTugasmu adalah menjawab pertanyaan seputar kriteria dan panduan penulisan tugas akhir atau skripsi, seperti:\n- Struktur dan isi setiap bab (Pendahuluan, Kajian Literatur, Metodologi, Analisis & Pembahasan, Kesimpulan)\n- Cara penulisan judul, abstrak, dan daftar referensi\n- Format dan gaya penulisan ilmiah yang benar\n- Kriteria penilaian tugas akhir\n\nDalam menjawab, kamu HARUS mengacu pada informasi yang tersedia di Tool \"Supabase_Vector_Store\".\nJawablah dengan bahasa Indonesia yang jelas, rapi, dan mudah dipahami oleh mahasiswa.\nJika pertanyaan membutuhkan penjelasan panjang, gunakan poin-poin agar lebih mudah dibaca.\n\nJika informasi tidak tersedia di Tool tersebut, jawablah dengan:\n\"Mohon maaf, saya belum dapat memberikan jawaban terkait pertanyaan tersebut.\"\n\nJangan menjawab pertanyaan di luar topik penulisan ilmiah tugas akhir atau skripsi."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        208,
+        176
+      ],
+      "id": "33efbd82-8317-446e-9beb-c1809f89c4cd",
+      "name": "AI Agent",
+      "notes": "Node utama AI Agent. System message sudah dikonfigurasi sesuai topik (penulisan ilmiah tugas akhir/skripsi). Terhubung ke: LLM (Gemini), Memory (Postgres), dan Tool (Supabase Vector Store)."
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId ?? $('When chat message received').item.json.chatId ?? 'default-session' }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        400
+      ],
+      "id": "4140c46f-197c-4652-8979-39311f718527",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "a4JBfAPWVIgKn46w",
+          "name": "Postgres account 2"
+        }
+      },
+      "notes": "Memori percakapan berbasis Postgres (Supabase). Menyimpan 10 percakapan terakhir per sesi. Gunakan credential Postgres dari Supabase (Transaction pooler, port 6543)."
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "Supabase_Vector_Store",
+        "toolDescription": "Gunakan Tool ini untuk menjawab pertanyaan tentang penulisan ilmiah tugas akhir atau skripsi.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        512,
+        304
+      ],
+      "id": "7f514c95-e16d-44d8-95bc-743810bd562d",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "GGiZ8vin9cdvRNss",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Tool untuk AI Agent mengambil data dari Supabase Vector Store. Gunakan akun dan tabel yang SAMA dengan RAG Pipeline di atas. Mode: retrieve-as-tool."
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "16GbcauLRY_2wjnMTg_pqaU-HRflcmmDB",
+          "mode": "list",
+          "cachedResultName": "rag-supabase-1",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/16GbcauLRY_2wjnMTg_pqaU-HRflcmmDB"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -128
+      ],
+      "id": "e0fd6d73-be35-48fb-94fc-f9238bd842ce",
+      "name": "Google Drive Trigger1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "i9ixQj8I0KGT375B",
+          "name": "Google Drive account 3"
+        }
+      },
+      "notes": "Pantau folder 'rag-supabase-1'. Trigger saat file baru dibuat. Pastikan file di folder sudah berformat Google Docs (bukan .docx)."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1ae0cd5c-ca99-4019-9504-445f7b974196",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -128
+      ],
+      "id": "30bb9a09-9086-46c6-b4b4-ddb4f5bf8921",
+      "name": "Edit Fields1",
+      "notes": "Ambil file_id dari Google Drive Trigger untuk dipakai di node Download file."
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        432,
+        -128
+      ],
+      "id": "e57e0e74-514a-4925-be35-c3edaba764c9",
+      "name": "Download file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "i9ixQj8I0KGT375B",
+          "name": "Google Drive account 3"
+        }
+      },
+      "notes": "Download Google Docs dan konversi ke text/plain. PENTING: File harus sudah berformat Google Docs (bukan .docx) agar konversi berjalan."
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        -128
+      ],
+      "id": "8ffac328-c824-4540-ba73-6bcad46ef598",
+      "name": "Extract from File1",
+      "notes": "Ekstrak teks dari file text/plain hasil download."
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        -128
+      ],
+      "id": "971a19df-2a12-4ede-933d-56960d75e40e",
+      "name": "Supabase Vector Store2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "fOsY1PtjSgnE0Jkp",
+          "name": "Supabase account 2"
+        }
+      },
+      "notes": "Simpan embedding ke tabel 'documents'. Pastikan tabel dibuat dengan dimensi vector 768 (sesuai gemini-embedding-001)."
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-2-preview"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        80
+      ],
+      "id": "cc80f986-c69c-4809-8c32-71255a69f14b",
+      "name": "Embeddings Google Gemini2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DiKHWCqvx7hOy55o",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      },
+      "notes": "Embedding Gemini 768 dimensi untuk RAG Pipeline."
+    },
+    {
+      "parameters": {
+        "dataType": "text",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        976,
+        80
+      ],
+      "id": "4f2f77cd-dea6-418b-96b8-a2ea76ac3f50",
+      "name": "Default Data Loader1",
+      "notes": "Load teks dari Clean Text ke Supabase Vector Store."
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 50,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        976,
+        240
+      ],
+      "id": "88994439-b1e4-438a-99af-589757f3a7bf",
+      "name": "Recursive Character Text Splitter1",
+      "notes": "Pecah teks menjadi chunk 500 karakter, overlap 50 karakter."
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        192,
+        368
+      ],
+      "id": "15fce448-7aa2-46be-8796-c10e070b9961",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "ZYHxWZSdZyt3rTZK",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-2-preview"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        576,
+        496
+      ],
+      "id": "fe55e7cb-8a8d-48c4-a492-56dea342cdce",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DiKHWCqvx7hOy55o",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      },
+      "notes": "Embedding Gemini 768 dimensi untuk RAG Pipeline."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Download file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "availableInMCP": false
+  },
+  "versionId": "3d948a48-5f6f-4727-a247-ce0d6ce95082",
+  "meta": {
+    "instanceId": "0501412502f47367dcb6fba0780ac05ad70d68d7c97bec5655c5b42bb8c4cc92"
+  },
+  "id": "qaH1djL9SBok6r6U",
+  "tags": []
+}
